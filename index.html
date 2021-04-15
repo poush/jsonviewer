@@ -7,12 +7,37 @@
     <title>JSON Viewer - Swapcard</title>
   </head>
 
-  <link href="libs/jsonTree/jsonTree.css" rel="stylesheet" />
+  <link href="json.css" rel="stylesheet" />
   <script src="json.js"></script>
   <script>
+    function file_get_contents(uri, callback) {
+      fetch(uri)
+        .then((res) => res.text())
+        .then((text) => callback(text));
+    }
+
     var url = new URL(window.location.href);
     var c = url.searchParams.get("aws");
-    console.log(c);
+
+    console.log("here's your url, I am loading, keep debugging =>", c);
+
+    file_get_contents(c, (text) => {
+      try {
+        const data = text.split("\n").reduce((payload, row) => {
+          payload[row.createdAt] = JSON.parse(row.data);
+        }, {});
+
+        var tree = jsonTree.create(data, document.getElementById("content"));
+      } catch (e) {
+        console.log("oops, I'm broke :( \n", e);
+      }
+    });
   </script>
-  <body></body>
+  <body>
+    <div id="content">
+      <span id="loading">
+        Wait.... I am loading data for you. Check you internet!
+      </span>
+    </div>
+  </body>
 </html>
