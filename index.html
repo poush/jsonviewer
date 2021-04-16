@@ -23,10 +23,36 @@
 
     file_get_contents(c, (text) => {
       try {
-        const data = text.split("\n").reduce((payload, row) => {
-          payload[row.createdAt] = JSON.parse(row.data);
-        }, {});
+        const data = text
+          .split("\n<<<<<<<<\n")
+          .slice(1)
+          .reduce((payload, row) => {
+            let parsedRow = null;
+            try {
+              parsedRow = JSON.parse(row);
+            } catch (e) {
+              console.error(e);
+              return payload;
+            }
 
+            // if (
+            //   !parsedRow ||
+            //   Array.isArray(parsedRow) ||
+            //   !("createAt" in parsedRow)
+            // ) {
+            //   console.log("skipping", row, parsedRow);
+            //   return payload;
+            // }
+            console.log(parsedRow);
+            payload[new Date(parsedRow.createdAt).toTimeString()] =
+              parsedRow.data;
+
+            return payload;
+          }, {});
+
+        if (Object.keys(data).length > 0) {
+          document.getElementById("loading").remove();
+        }
         var tree = jsonTree.create(data, document.getElementById("content"));
       } catch (e) {
         console.log("oops, I'm broke :( \n", e);
